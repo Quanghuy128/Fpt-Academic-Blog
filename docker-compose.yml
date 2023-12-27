@@ -1,0 +1,41 @@
+version: '3.4'
+
+networks:
+  dev:
+    driver: bridge
+
+volumes:
+  fab_data:
+
+services:
+  fab_api:
+    image: docker.io/library/fab_api
+    depends_on:
+        - "fab_db"
+    container_name: fab-services
+    ports:
+        - "8080:80"
+    build:
+      context: .
+      dockerfile: FAB.API\Dockerfile
+    environment:
+        - ConnectionStrings__DefaultConnection=User ID=postgres;Password=root;Server=fab_db;Port=5432;Database=academic_blog;Integrated Security=True;Pooling=True;TrustServerCertificate=True
+        - ASPNETCORE_URLS=http://+:80
+    networks:
+        - dev
+         
+  fab_db:
+    image: postgres:latest
+    container_name: fab_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: academic_blog
+      PGDATA: /data/postgres
+    volumes:
+       - fab_data:/var/lib/postgressql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - dev
+    restart: always
